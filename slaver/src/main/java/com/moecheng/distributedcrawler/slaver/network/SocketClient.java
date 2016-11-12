@@ -8,7 +8,17 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class SocketClient {
-	
+
+	private static SocketClient mContext = null;
+
+	public static SocketClient getInstance() {
+		if(mContext == null) {
+			return new SocketClient();
+		}
+		return mContext;
+	}
+
+
 	private String masterIp = "127.0.0.1";
 	private int masterPort = 9090;
 	
@@ -35,7 +45,9 @@ public class SocketClient {
 	 * 开启监听
 	 */
 	public void start(){
-		new Thread(this.handler).start();
+		new Thread(this.handler){
+
+		}.start();
 	}
 	
 	/**

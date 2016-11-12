@@ -4,6 +4,7 @@ import com.moecheng.distributedcrawler.slaver.model.Page;
 import com.moecheng.distributedcrawler.slaver.model.Site;
 import com.moecheng.distributedcrawler.slaver.network.model.Config;
 import com.moecheng.distributedcrawler.slaver.pipeline.ConsolePipeline;
+import com.moecheng.distributedcrawler.slaver.pipeline.SocketPipeline;
 import com.moecheng.distributedcrawler.slaver.processor.Processor;
 import com.moecheng.distributedcrawler.slaver.scheduler.RedisScheduler;
 import com.moecheng.distributedcrawler.slaver.test.BookInfo;
@@ -17,6 +18,15 @@ import java.util.List;
  * Created by mengchenyun on 2016/11/11.
  */
 public class StartCrawler implements Processor {
+
+    private static StartCrawler mContext = null;
+
+    public static StartCrawler getInstance(Config config) {
+        if(mContext == null) {
+            return new StartCrawler(config);
+        }
+        return mContext;
+    }
 
     private Config config;
 
@@ -46,9 +56,9 @@ public class StartCrawler implements Processor {
         return site;
     }
 
-    private void run(String masterIp, Config config) {
+    public void run(String masterIp) {
         int threadNum = 5;
         System.out.println("Running crawler with thread of "+threadNum+" default is 5");
-        Crawler.create(new StartCrawler(config)).addUrl(Config.getInstance().getStartUrls()).setScheduler(new RedisScheduler("127.0.0.1")).setThread(threadNum).addPipeline(new ConsolePipeline()).run();
+        Crawler.create(new StartCrawler(config)).addUrl(Config.getInstance().getStartUrls()).setScheduler(new RedisScheduler("127.0.0.1")).setThread(threadNum).addPipeline(new SocketPipeline()).run();
     }
 }

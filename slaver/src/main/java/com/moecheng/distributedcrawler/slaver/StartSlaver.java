@@ -1,8 +1,10 @@
 package com.moecheng.distributedcrawler.slaver;
 
+import com.alibaba.fastjson.JSON;
 import com.moecheng.distributedcrawler.slaver.network.Handler;
 import com.moecheng.distributedcrawler.slaver.network.SocketClient;
 import com.moecheng.distributedcrawler.slaver.network.model.Command;
+import com.moecheng.distributedcrawler.slaver.network.model.Config;
 import com.moecheng.distributedcrawler.slaver.network.model.ServerNode;
 import org.apache.commons.cli.*;
 
@@ -17,11 +19,10 @@ public class StartSlaver {
     private SocketClient slaverClient;
     
     private ServerNode masterNode;
-
-    private Crawler crawler;
     
     private StartSlaver(String ip, int port) {
         initSlaver(ip, port);
+        masterNode = new ServerNode(ip, port);
         bindAsyncEvent();
         System.out.println("Slaver server start to listen...");
     }
@@ -88,6 +89,9 @@ public class StartSlaver {
             public void onReceive(Handler handler, Command command) {
                 switch (command.getType()) {
                     case Command.CMD_START:
+                        String jsonStr = command.getInfo();
+                        Config config = JSON.parseObject(jsonStr, Config.class);
+                        StartCrawler.getInstance(config).run(masterNode.getIp());
                         break;
                     default:
                         break;
@@ -100,11 +104,6 @@ public class StartSlaver {
             }
 
         });
-
-    }
-
-
-    private void startCrawling() {
 
     }
 }

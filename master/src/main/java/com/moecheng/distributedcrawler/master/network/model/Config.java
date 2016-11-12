@@ -3,6 +3,7 @@ package com.moecheng.distributedcrawler.master.network.model;
 import com.moecheng.distributedcrawler.master.test.model.BookInfo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class Config implements Serializable {
 
     private Map<String, String> xpath;
 
-    private List<ServerNode> slavers;
+    private List<ServerNode> slavers = new ArrayList<>();
 
     public String[] getStartUrls() {
         return startUrls;
