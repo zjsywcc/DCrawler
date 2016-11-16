@@ -1,14 +1,20 @@
 package com.moecheng.distributedcrawler;
 
+import com.alibaba.fastjson.JSON;
 import com.moecheng.distributedcrawler.model.Site;
 import com.moecheng.distributedcrawler.pipeline.SocketPipeline;
 import com.moecheng.distributedcrawler.processor.Processor;
 import com.moecheng.distributedcrawler.model.Page;
 import com.moecheng.distributedcrawler.network.model.Config;
 import com.moecheng.distributedcrawler.scheduler.RedisScheduler;
-import com.moecheng.distributedcrawler.test.BookInfo;
+import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mengchenyun on 2016/11/11.
@@ -36,15 +42,17 @@ public class StartCrawler implements Processor {
     public void process(Page page) {
         List<String> strings = page.getHtml().links().regex(config.getRegex()).all();
         page.addTargetRequests(strings);
-        BookInfo bookInfo = config.getBookInfo();
-        bookInfo.setBookAuthor(page.getHtml().xpath(config.getXpath().get("BookAuthor")).toString());
-        bookInfo.setBookEdition(page.getHtml().xpath(config.getXpath().get("BookEdition")).toString());
-        bookInfo.setBookISBN(page.getHtml().xpath(config.getXpath().get("BookISBN")).toString());
-        bookInfo.setBookName(page.getHtml().xpath(config.getXpath().get("BookName")).toString());
-        bookInfo.setBookPress(page.getHtml().xpath(config.getXpath().get("BookPress")).toString());
-        bookInfo.setBookPrice(page.getHtml().xpath(config.getXpath().get("BookPrice")).toString());
-        bookInfo.setBookImage(page.getHtml().xpath(config.getXpath().get("BookImage")).toString());
-        page.putField(config.getEntityName(), bookInfo);
+        Map<String, Map<String, String>> results = config.getResults();
+        for(Map.Entry<String, Map<String, String>> entry : results.entrySet()) {
+            String entityName = entry.getKey();
+            Map<String, String> rules = results.get(entityName);
+            Map<String, String> result = new HashMap<>();
+            for(Map.Entry<String, String> rule : rules.entrySet()) {
+                String ruleName = rule.getKey();
+                result.put(ruleName, page.getHtml().xpath(rule.getValue()).toString());
+            }
+            page.putField(entityName, result);
+        }
     }
 
     @Override

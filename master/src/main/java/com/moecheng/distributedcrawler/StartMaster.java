@@ -1,19 +1,15 @@
 package com.moecheng.distributedcrawler;
 
-import com.alibaba.fastjson.JSON;
 import com.moecheng.distributedcrawler.network.Handler;
 import com.moecheng.distributedcrawler.network.SocketServer;
 import com.moecheng.distributedcrawler.network.model.Command;
-import com.moecheng.distributedcrawler.network.model.Config;
 import com.moecheng.distributedcrawler.network.model.ServerNode;
-import com.moecheng.distributedcrawler.test.model.BookInfo;
+import com.moecheng.distributedcrawler.utils.FileReaderUtil;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by mengchenyun on 2016/11/10.
@@ -156,21 +152,7 @@ public class StartMaster {
     }
 
     private void dispatchTask() {
-        Config config = new Config();
-        config.setStartUrls("http://www.bookuu.com/");
-        config.setRegex("http://detail.bookuu.com/[0-9]{7}.html");
-        Map<String, String> xpathMapping = new LinkedHashMap<>();
-        xpathMapping.put("BookAuthor", "//div[@class='parameter']/ul/li[3]/a/text()");
-        xpathMapping.put("BookEdition", "//div[@class='parameter']/ul/li[9]/text()");
-        xpathMapping.put("BookISBN", "//div[@class='parameter']/ul/li/span/text()");
-        xpathMapping.put("BookName", "//div[@id='name']/h2/text()");
-        xpathMapping.put("BookPress", "//div[@class='parameter']/ul/li[1]/a/text()");
-        xpathMapping.put("BookPrice", "//span[@id='bk-d-pricing']/text()");
-        xpathMapping.put("BookImage", "//div[@class='amplify']/a/@href");
-        config.setXpath(xpathMapping);
-        config.setBookInfo(new BookInfo());
-        config.setEntityName(BookInfo.class.getName());
-        String configJsonStr = JSON.toJSONString(config);
+        String configJsonStr = FileReaderUtil.readFile("config.txt");
         masterServer.sendAll(new Command(Command.CMD_DISPATCH_TASK, configJsonStr));
     }
 

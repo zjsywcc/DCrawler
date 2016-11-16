@@ -1,10 +1,8 @@
 package com.moecheng.distributedcrawler.network.model;
 
 
-import com.moecheng.distributedcrawler.test.BookInfo;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,13 +17,7 @@ public class Config implements Serializable {
 
     private String regex;
 
-    private String entityName;
-
-    private BookInfo bookInfo;
-
-    private Map<String, String> xpath;
-
-//    private List<ServerNode> slavers;
+    private Map<String, Map<String, String>> results;
 
     public String[] getStartUrls() {
         return startUrls;
@@ -43,29 +35,12 @@ public class Config implements Serializable {
         this.regex = regex;
     }
 
-    public String getEntityName() {
-        return entityName;
+    public Map<String, Map<String, String>> getResults() {
+        return results;
     }
 
-    public void setEntityName(String entityName) {
-        this.entityName = entityName;
-    }
-
-
-    public BookInfo getBookInfo() {
-        return bookInfo;
-    }
-
-    public void setBookInfo(BookInfo bookInfo) {
-        this.bookInfo = bookInfo;
-    }
-
-    public Map<String, String> getXpath() {
-        return xpath;
-    }
-
-    public void setXpath(Map<String, String> xpath) {
-        this.xpath = xpath;
+    public void setResults(Map<String, Map<String, String>> results) {
+        this.results = results;
     }
 
 }

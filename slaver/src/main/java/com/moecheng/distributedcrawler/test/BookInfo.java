@@ -12,21 +12,22 @@ public class BookInfo implements Serializable {
 
     private Integer id;
 
-    private String bookUrl;
+    private String bookUrl = "";
 
-    private String bookAuthor;
+    private String bookAuthor = "";
 
-    private String bookEdition;
+    private String bookEdition = "";
 
-    private String bookISBN;
+    private String bookISBN = "";
 
-    private String bookName;
+    private String bookName = "";
 
-    private String bookPress;
+    private String bookPress = "";
 
-    private String bookPrice;
+    private String bookPrice = "";
 
-    private String bookImage;
+    private String bookImage = "";
+
 
     public Integer getId() {
         return id;
