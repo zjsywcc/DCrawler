@@ -2,8 +2,6 @@ package com.moecheng.distributedcrawler.network;
 
 
 import com.moecheng.distributedcrawler.network.model.Command;
-import com.moecheng.distributedcrawler.network.model.Config;
-import com.moecheng.distributedcrawler.network.model.ServerNode;
 
 import java.io.IOException;
 import java.net.InetAddress;

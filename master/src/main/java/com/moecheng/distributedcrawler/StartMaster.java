@@ -3,13 +3,11 @@ package com.moecheng.distributedcrawler;
 import com.moecheng.distributedcrawler.network.Handler;
 import com.moecheng.distributedcrawler.network.SocketServer;
 import com.moecheng.distributedcrawler.network.model.Command;
-import com.moecheng.distributedcrawler.network.model.ServerNode;
 import com.moecheng.distributedcrawler.utils.FileReaderUtil;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.List;
 
 /**
  * Created by mengchenyun on 2016/11/10.
@@ -17,8 +15,6 @@ import java.util.List;
 public class StartMaster {
 
     private SocketServer masterServer;
-
-    private List<ServerNode> slavers;
 
     private int status = -1;
 
