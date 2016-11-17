@@ -104,6 +104,11 @@ public class StartMaster {
                     startMaster.stopCrawling(slaverId);
                     System.out.println("Stop " + slaverId + "...");
                 }
+                if(params[0].equalsIgnoreCase("read")) {
+                    String config = params[1];
+                    startMaster.configStr = FileReaderUtil.readFile(config);
+                    startMaster.stopCrawling();
+                }
             }
         }
     }
