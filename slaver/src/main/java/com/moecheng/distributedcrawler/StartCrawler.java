@@ -1,18 +1,13 @@
 package com.moecheng.distributedcrawler;
 
-import com.alibaba.fastjson.JSON;
 import com.moecheng.distributedcrawler.model.Site;
-import com.moecheng.distributedcrawler.pipeline.SocketPipeline;
 import com.moecheng.distributedcrawler.processor.Processor;
 import com.moecheng.distributedcrawler.model.Page;
 import com.moecheng.distributedcrawler.network.model.Config;
 import com.moecheng.distributedcrawler.scheduler.RedisScheduler;
-import org.springframework.util.ReflectionUtils;
+import com.moecheng.distributedcrawler.utils.JsonFilePipeline;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,9 +18,12 @@ public class StartCrawler implements Processor {
 
     private static StartCrawler mContext = null;
 
+    private Crawler crawler;
+
     public static StartCrawler getInstance(Config config) {
         if(mContext == null) {
-            return new StartCrawler(config);
+            mContext = new StartCrawler(config);
+            return mContext;
         }
         return mContext;
     }
@@ -63,6 +61,15 @@ public class StartCrawler implements Processor {
     public void run(String masterIp) {
         int threadNum = 5;
         System.out.println("Running crawler with thread of "+threadNum+" default is 5");
-        Crawler.create(new StartCrawler(config)).addUrl(config.getStartUrls()).setScheduler(new RedisScheduler("127.0.0.1")).setThread(threadNum).addPipeline(new SocketPipeline()).run();
+        crawler = Crawler.create(new StartCrawler(config)).addUrl(config.getStartUrls()).setScheduler(new RedisScheduler(masterIp)).setThread(threadNum).addPipeline(new JsonFilePipeline());
+        crawler.run();
+    }
+
+    public void stop() {
+        try {
+            crawler.stop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

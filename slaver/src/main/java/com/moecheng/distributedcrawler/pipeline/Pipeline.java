@@ -1,6 +1,7 @@
 package com.moecheng.distributedcrawler.pipeline;
 
 
+import com.moecheng.distributedcrawler.Task;
 import com.moecheng.distributedcrawler.model.ResultItems;
 
 /**
@@ -8,5 +9,5 @@ import com.moecheng.distributedcrawler.model.ResultItems;
  */
 public interface Pipeline {
 
-    void process(ResultItems resultItems);
+    void process(ResultItems resultItems, Task task);
 }

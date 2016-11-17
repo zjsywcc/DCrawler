@@ -3,7 +3,9 @@ package com.moecheng.distributedcrawler.downloader;
 
 
 
+import com.moecheng.distributedcrawler.Task;
 import com.moecheng.distributedcrawler.model.Page;
+import com.moecheng.distributedcrawler.model.Site;
 import com.moecheng.distributedcrawler.model.URLRequest;
 import com.moecheng.distributedcrawler.model.selector.PlainText;
 import okhttp3.Request;
@@ -23,11 +25,11 @@ public class OkHttpDownloader extends AbstractDownloader {
     private OkHttpClientGenerator okHttpClientGenerator = OkHttpClientGenerator.getInstance();
 
     @Override
-    public Page download(URLRequest URLRequest) {
-//        Site site = null;
-//        if(task != null) {
-//            site = task.getSite();
-//        }
+    public Page download(URLRequest URLRequest, Task task) {
+        Site site = null;
+        if(task != null) {
+            site = task.getSite();
+        }
         logger.info("downloading page {}", URLRequest.getUrl());
         int statusCode=0;
         Request request = new Request.Builder()

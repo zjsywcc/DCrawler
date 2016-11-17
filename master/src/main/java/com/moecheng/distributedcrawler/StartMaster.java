@@ -3,11 +3,15 @@ package com.moecheng.distributedcrawler;
 import com.moecheng.distributedcrawler.network.Handler;
 import com.moecheng.distributedcrawler.network.SocketServer;
 import com.moecheng.distributedcrawler.network.model.Command;
+import com.moecheng.distributedcrawler.network.model.ServerNode;
 import com.moecheng.distributedcrawler.utils.FileReaderUtil;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 /**
  * Created by mengchenyun on 2016/11/10.
@@ -16,10 +20,13 @@ public class StartMaster {
 
     private SocketServer masterServer;
 
-    private int status = -1;
+    private String configStr;
+
+    private Map<String, ServerNode> slavers;
 
     private StartMaster() {
         initMaster();
+        slavers = new HashMap<>();
         bindAsyncEvent();
         System.out.println("Master server start...");
     }
@@ -31,11 +38,7 @@ public class StartMaster {
         // -h --help 帮助文档
         // -f --file file参数
         opts.addOption("h", "help", false, "The command help.");
-        opts.addOption("start", "start", false,
-                "Start master server.");
-        opts.addOption("d", "dispatch", false, "Dispatch configuration to all slavers.");
-        opts.addOption("l", "list", false, "List all the slavers.");
-        opts.addOption("r", "run", false, "Trigger all the slavers to start running.");
+        opts.addOption("c", "config", true, "read local configuration.");
     }
 
     /**
@@ -47,7 +50,9 @@ public class StartMaster {
     }
 
     public static void main(String[] args) throws ParseException {
-        StartMaster startMaster = null;
+        StartMaster startMaster = new StartMaster();
+        startMaster.masterServer.start();
+        System.out.print("请输入命令:");
         // 解析参数
         CommandLineParser parser = new PosixParser();
         CommandLine cl = parser.parse(opts, args);
@@ -55,56 +60,56 @@ public class StartMaster {
             printHelp(opts);
             return;
         }
-        if(cl.hasOption("start")) {
-            startMaster = new StartMaster();
-            startMaster.masterServer.start();
-            startMaster.status = 0;
-            System.out.print("请输入命令:");
-            while (true) {
-                try {
-                    char c = (char)System.in.read();
-                    if(c == 'r') {
-                        System.out.println("开始运行...");
-                        if(startMaster == null) {
-                            System.out.println("Please start server first.");
-                        } else {
-                            startMaster.dispatchTask();
-        //                    startMaster.status = 1;
-                            startMaster.startCrawling();
+        if(cl.hasOption("c")) {
+            String optionValue = cl.getOptionValue("c");
+            startMaster.configStr = FileReaderUtil.readFile(optionValue);
+        }
+        Scanner sc = new Scanner(System.in);
+
+        for (prompt(); sc.hasNextLine(); prompt()) {
+
+            String line = sc.nextLine().replaceAll("\n", "");
+
+            // return pressed
+            if (line.length() == 0)
+                continue;
+
+            // split line into arguments
+            String[] params = line.split(" ");
+
+            // process arguments
+            if (params.length == 1) {
+                if (params[0].equalsIgnoreCase("exit"))
+                    System.exit(0);
+                if (params[0].equalsIgnoreCase("list")) {
+                    int i = 0;
+                    if (!startMaster.slavers.isEmpty()) {
+                        for(Map.Entry<String, ServerNode> entry : startMaster.slavers.entrySet()) {
+                            System.out.println(String.format("Slaver %s: ip: %s port: %s", i++, entry.getValue().getIp(), entry.getValue().getPort()));
                         }
+                    } else {
+                        System.out.println("Slaver list is empty.");
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                }
+                if (params[0].equalsIgnoreCase("run")) {
+                    startMaster.dispatchTask(startMaster.configStr);
+                    startMaster.startCrawling();
+                }
+                if(params[0].equalsIgnoreCase("msg")) {
+                    startMaster.sendMsg("just to test...");
+                }
+            } else if (params.length == 2){
+                if(params[0].equalsIgnoreCase("stop")) {
+                    String slaverId = params[1];
+                    startMaster.stopCrawling(slaverId);
+                    System.out.println("Stop " + slaverId + "...");
                 }
             }
         }
-//        if(cl.hasOption("d")) {
-//            if(startMaster == null) {
-//                System.out.println("Please start server first.");
-//            } else {
-//                startMaster.dispatchTask();
-//                startMaster.status = 1;
-//            }
-//        }
-//        if(cl.hasOption("l")) {
-//            if(startMaster == null) {
-//                System.out.println("Please start server first.");
-//            } else {
-//                int i = 0;
-//                for(ServerNode serverNode : Config.getInstance().getSlavers()) {
-//                    System.out.println(String.format("Slaver %s: ip: %s port: %s", i++, serverNode.getIp(), serverNode.getPort()));
-//                }
-//            }
-//        }
-//        if(cl.hasOption("r")) {
-//            if(startMaster == null) {
-//                System.out.println("Please start server first.");
-//            } else if(startMaster.status == 0) {
-//                System.out.println("You should dispatch the configuration to all slavers.");
-//            } else {
-//                startMaster.startCrawling();
-//            }
-//        }
+    }
+
+    public static void prompt() {
+        System.out.print("127.0.0.1:9090 > ");
     }
 
     private void initMaster() {
@@ -124,7 +129,11 @@ public class StartMaster {
 
             @Override
             public void onAccept(String slaveId, Handler handler) {
-                System.out.println(handler.getInetAddress());
+                String ip = handler.getSocket().getInetAddress().getHostAddress();
+                int port = handler.getSocket().getPort();
+                String key = ip + ":" + port;
+                slavers.put(key, new ServerNode(ip, port));
+
             }
 
             @Override
@@ -141,18 +150,32 @@ public class StartMaster {
             @Override
             public void onClose(String slaveId) {
                 System.out.println("slave closed:" + slaveId);
+                masterServer.removeSlave(slaveId);
+                slavers.remove(slaveId);
             }
 
         });
 
     }
 
-    private void dispatchTask() {
-        String configJsonStr = FileReaderUtil.readFile("config.txt");
-        masterServer.sendAll(new Command(Command.CMD_DISPATCH_TASK, configJsonStr));
+    private void dispatchTask(String configStr) {
+        masterServer.sendAll(new Command(Command.CMD_DISPATCH_TASK, configStr));
     }
 
     private void startCrawling() {
         masterServer.sendAll(new Command(Command.CMD_START, "Start crawling"));
     }
+
+    private void stopCrawling(String slaverId) {
+        masterServer.send(slaverId, new Command(Command.CMD_STOP, "Stop crawling"));
+    }
+
+    private void stopCrawling() {
+        masterServer.sendAll(new Command(Command.CMD_STOP, "Stop crawling"));
+    }
+
+    private void sendMsg(String info) {
+        masterServer.sendAll(new Command(Command.CMD_MSG, info));
+    }
+
 }

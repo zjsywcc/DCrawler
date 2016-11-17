@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -58,6 +59,14 @@ public class Crawler implements Runnable, Task {
 
     protected String uuid;
 
+    protected final static int STAT_INIT = 0;
+
+    protected AtomicInteger stat = new AtomicInteger(STAT_INIT);
+
+    protected final static int STAT_RUNNING = 1;
+
+    protected final static int STAT_STOPPED = 2;
+
     private Crawler(Processor processor) {
         this.processor = processor;
         this.site = processor.getSite();
@@ -80,11 +89,13 @@ public class Crawler implements Runnable, Task {
     }
 
     public Crawler addPipeline(Pipeline pipeline) {
+        checkIfRunning();
         pipelines.add(pipeline);
         return this;
     }
 
     public Crawler setThread(int threadNum) {
+        checkIfRunning();
         this.threadNum = threadNum;
         if(threadNum <= 0) {
             throw new IllegalArgumentException("threadNum should be more than one!");
@@ -93,6 +104,7 @@ public class Crawler implements Runnable, Task {
     }
 
     public Crawler setScheduler(Scheduler scheduler) {
+        checkIfRunning();
         Scheduler oldScheduler = this.scheduler;
         this.scheduler = scheduler;
         if (oldScheduler != null) {
@@ -130,9 +142,10 @@ public class Crawler implements Runnable, Task {
 
     @Override
     public void run() {
+        checkRunningStat();
         initComponent();
         logger.info("crawler " + site.getDomain() + " started!");
-        while(!Thread.currentThread().isInterrupted()) {
+        while(!Thread.currentThread().isInterrupted() && stat.get() == STAT_RUNNING) {
             URLRequest request = scheduler.poll(this);
             if(request == null) {
                 if(threadPool.getThreadAlive() == 0) {
@@ -157,6 +170,7 @@ public class Crawler implements Runnable, Task {
                 });
             }
         }
+        stat.set(STAT_STOPPED);
         close();
     }
 
@@ -205,14 +219,14 @@ public class Crawler implements Runnable, Task {
     }
 
     private void processRequest(URLRequest request) {
-        Page page = downloader.download(request);
+        Page page = downloader.download(request, this);
         if(page == null) {
             throw new RuntimeException("unacceptable response status");
         }
         processor.process(page);
         extractAndAddRequests(page);
         for(Pipeline pipeline : pipelines) {
-            pipeline.process((page.getResultItems()));
+            pipeline.process(page.getResultItems(), this);
         }
         sleep(site.getSleepTime());
     }
@@ -252,6 +266,32 @@ public class Crawler implements Runnable, Task {
     @Override
     public Site getSite() {
         return site;
+    }
+
+    public void stop() {
+        if (stat.compareAndSet(STAT_RUNNING, STAT_STOPPED)) {
+            logger.info("Spider " + getUUID() + " stop success!");
+        } else {
+            logger.info("Spider " + getUUID() + " stop fail!");
+        }
+    }
+
+    private void checkRunningStat() {
+        while (true) {
+            int statNow = stat.get();
+            if (statNow == STAT_RUNNING) {
+                throw new IllegalStateException("Spider is already running!");
+            }
+            if (stat.compareAndSet(statNow, STAT_RUNNING)) {
+                break;
+            }
+        }
+    }
+
+    protected void checkIfRunning() {
+        if (stat.get() == STAT_RUNNING) {
+            throw new IllegalStateException("Spider is already running!");
+        }
     }
 
 }

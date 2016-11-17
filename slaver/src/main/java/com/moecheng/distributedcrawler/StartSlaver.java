@@ -10,6 +10,7 @@ import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 /**
  * Created by mengchenyun on 2016/11/10.
@@ -74,10 +75,19 @@ public class StartSlaver {
                 port = Integer.parseInt(optionValue.split(":")[1]);
                 startSlaver = new StartSlaver(ip, port);
                 startSlaver.slaverClient.start();
+                Scanner sc = new Scanner(System.in);
+                while (true) {
+                    String line = sc.nextLine().replaceAll("\n", "");
+                    String[] params = line.split(" ");
+                    if(params[0].equalsIgnoreCase("s")) {
+                        StartCrawler.getInstance(startSlaver.config).stop();
+                    }
+                }
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     private void initSlaver(String masterIp, int masterPort) {
@@ -107,6 +117,13 @@ public class StartSlaver {
                         String info = command.getInfo();
                         System.out.println(info);
                         StartCrawler.getInstance(config).run(masterNode.getIp());
+                        break;
+                    case Command.CMD_STOP:
+                        System.out.println(command.getInfo());
+                        StartCrawler.getInstance(config).stop();
+                        break;
+                    case Command.CMD_MSG:
+                        System.out.println(command.getInfo());
                         break;
                     default:
                         break;

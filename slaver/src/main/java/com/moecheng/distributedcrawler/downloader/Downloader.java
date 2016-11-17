@@ -1,6 +1,7 @@
 package com.moecheng.distributedcrawler.downloader;
 
 
+import com.moecheng.distributedcrawler.Task;
 import com.moecheng.distributedcrawler.model.URLRequest;
 import com.moecheng.distributedcrawler.model.Page;
 
@@ -9,7 +10,7 @@ import com.moecheng.distributedcrawler.model.Page;
  */
 public interface Downloader {
 
-    Page download(URLRequest request);
+    Page download(URLRequest request, Task task);
 
     void setThread(int num);
 }

@@ -1,5 +1,6 @@
 package com.moecheng.distributedcrawler.test;
 
+import com.moecheng.distributedcrawler.Task;
 import com.moecheng.distributedcrawler.pipeline.Pipeline;
 import com.moecheng.distributedcrawler.model.ResultItems;
 import org.slf4j.Logger;
@@ -14,7 +15,7 @@ public class BookInfoPipelineRemote implements Pipeline {
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public void process(ResultItems resultItems) {
+    public void process(ResultItems resultItems, Task task) {
 //        ApplicationContext ac = new FileSystemXmlApplicationContext("src/main/resources/spring/applicationContext-myBatis.xml");
         ApplicationContext ac = new ClassPathXmlApplicationContext("classpath:/spring/applicationContext*.xml");
         BookInfoDAO bookInfoDAO = (BookInfoDAO) ac.getBean(BookInfoDAO.class);
