@@ -172,11 +172,11 @@ public class StartMaster {
     }
 
     private void stopCrawling(String slaverId) {
-        masterServer.send(slaverId, new Command(Command.CMD_STOP, "Stop crawling"));
+        masterServer.send(slaverId, new Command(Command.CMD_STOP, "Stop crawling for " + slaverId));
     }
 
     private void stopCrawling() {
-        masterServer.sendAll(new Command(Command.CMD_STOP, "Stop crawling"));
+        masterServer.sendAll(new Command(Command.CMD_STOP, "Stop crawling for all..."));
     }
 
     private void sendMsg(String info) {

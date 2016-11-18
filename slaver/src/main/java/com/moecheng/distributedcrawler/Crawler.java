@@ -294,4 +294,14 @@ public class Crawler implements Runnable, Task {
         }
     }
 
+    public void runAsync() {
+        Thread thread = new Thread(this);
+        thread.setDaemon(false);
+        thread.start();
+    }
+
+    public void start() {
+        runAsync();
+    }
+
 }

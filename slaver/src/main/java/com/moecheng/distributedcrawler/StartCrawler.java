@@ -30,7 +30,7 @@ public class StartCrawler implements Processor {
 
     private Config config;
 
-    private Site site = Site.me().setRetryTimes(3).setSleepTime(0).setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.57 Safari/537.36");
+    private Site site = Site.me().setRetryTimes(3).setSleepTime(50).setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.57 Safari/537.36");
 
     public StartCrawler(Config config) {
         this.config = config;
@@ -62,7 +62,7 @@ public class StartCrawler implements Processor {
         int threadNum = 5;
         System.out.println("Running crawler with thread of "+threadNum+" default is 5");
         crawler = Crawler.create(new StartCrawler(config)).addUrl(config.getStartUrls()).setScheduler(new RedisScheduler(masterIp)).setThread(threadNum).addPipeline(new JsonFilePipeline());
-        crawler.run();
+        crawler.start();
     }
 
     public void stop() {
