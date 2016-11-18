@@ -36,9 +36,7 @@ public class SocketClient {
 	 * 开启监听
 	 */
 	public void start(){
-		new Thread(this.handler){
-
-		}.start();
+		new Thread(this.handler).start();
 	}
 	
 	/**

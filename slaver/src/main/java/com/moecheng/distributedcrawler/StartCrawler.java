@@ -1,6 +1,7 @@
 package com.moecheng.distributedcrawler;
 
 import com.moecheng.distributedcrawler.model.Site;
+import com.moecheng.distributedcrawler.pipeline.SocketPipeline;
 import com.moecheng.distributedcrawler.processor.Processor;
 import com.moecheng.distributedcrawler.model.Page;
 import com.moecheng.distributedcrawler.network.model.Config;
@@ -61,7 +62,7 @@ public class StartCrawler implements Processor {
     public void run(String masterIp) {
         int threadNum = 5;
         System.out.println("Running crawler with thread of "+threadNum+" default is 5");
-        crawler = Crawler.create(new StartCrawler(config)).addUrl(config.getStartUrls()).setScheduler(new RedisScheduler(masterIp)).setThread(threadNum).addPipeline(new JsonFilePipeline());
+        crawler = Crawler.create(new StartCrawler(config)).addUrl(config.getStartUrls()).setScheduler(new RedisScheduler(masterIp)).setThread(threadNum).addPipeline(new JsonFilePipeline()).addPipeline(new SocketPipeline());
         crawler.start();
     }
 

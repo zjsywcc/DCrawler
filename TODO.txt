@@ -1,0 +1,6 @@
+1.list slavers 格式化
+2.回传master slavers的具体任务分配情况
+3.master可以监控slavers的任务执行进度
+4.slavers本地的结果集持久化
+5.master直接启动或者关闭slavers
+6.用jetty加入web-ui监控slavers的任务执行情况并进行控制

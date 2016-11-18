@@ -272,7 +272,7 @@ public class Crawler implements Runnable, Task {
         if (stat.compareAndSet(STAT_RUNNING, STAT_STOPPED)) {
             logger.info("Spider " + getUUID() + " stop success!");
         } else {
-            logger.info("Spider " + getUUID() + " stop fail!");
+            logger.info("Spider " + getUUID() + " stop fail or already stopped!");
         }
     }
 

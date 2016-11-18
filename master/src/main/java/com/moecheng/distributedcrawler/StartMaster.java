@@ -98,6 +98,9 @@ public class StartMaster {
                 if(params[0].equalsIgnoreCase("msg")) {
                     startMaster.sendMsg("just to test...");
                 }
+                if(params[0].equalsIgnoreCase("stop")) {
+                    startMaster.stopCrawling();
+                }
             } else if (params.length == 2){
                 if(params[0].equalsIgnoreCase("stop")) {
                     String slaverId = params[1];

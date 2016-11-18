@@ -35,7 +35,7 @@ public class Config2JSONTest {
         results.put("BookInfo", xpath);
         config.setResults(results);
         String jsonStr = JSON.toJSONString(config);
-        try {
+            try {
             PrintWriter out = new PrintWriter("config.txt");
             out.println(jsonStr);
             out.close();
